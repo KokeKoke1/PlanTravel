@@ -1,0 +1,80 @@
+﻿@page "/travel"
+@inject IJSRuntime JS
+@inject NavigationManager Navigation
+
+<div class="container container-blur">
+
+    @if (trips == null)
+    {
+        <p>Ładowanie...</p>
+    }
+    else if (trips.Count == 0)
+    {
+        <p>Brak zapisanych podróży.</p>
+    }
+    else
+    {
+        @foreach (var trip in trips)
+        {
+            <div class="mt-4 rounded bg-light overflow-hidden">
+                <div class="d-flex align-items-center justify-content-between p-3">
+                    <h4 class="fw-bold mb-0">@trip.Name</h4>
+                    <div class="badge bg-primary text-capitalize">@trip.Theme</div>
+                </div>
+
+                <div class="p-3 pt-0">
+                    <p class="text-muted">Kliknij, aby zobaczyć szczegóły podróży.</p>
+                    <div class="d-flex align-items-center justify-content-between">
+                        <button class="btn btn-primary rounded-pill" @onclick="() => NavigateToTrip(trip.Id)">
+                            Zobacz plan
+                        </button>
+                        <button class="btn btn-sm rounded-circle text-danger" title="Usuń" @onclick="() => RemoveTrip(trip.Id)" style="font-size: 1.3rem;">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        }
+    }
+</div>
+
+@code {
+    private List<TripModel> trips;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadTrips();
+    }
+
+    private async Task LoadTrips()
+    {
+        var json = await JS.InvokeAsync<string>("localStorage.getItem", "trips");
+        trips = !string.IsNullOrEmpty(json)
+            ? System.Text.Json.JsonSerializer.Deserialize<List<TripModel>>(json)
+            : new List<TripModel>();
+    }
+
+    private void NavigateToTrip(string id)
+    {
+        Navigation.NavigateTo($"/travel/{id}");
+    }
+
+    private async Task RemoveTrip(string id)
+    {
+        var target = trips.FirstOrDefault(t => t.Id == id);
+        if (target != null)
+        {
+            trips.Remove(target);
+            var updatedJson = System.Text.Json.JsonSerializer.Serialize(trips);
+            await JS.InvokeVoidAsync("localStorage.setItem", "trips", updatedJson);
+        }
+    }
+
+    public class TripModel
+    {
+        public string Id { get; set; }
+        public string Name { get; set; }
+        public string Theme { get; set; }
+        public string LocationsJson { get; set; }
+    }
+}

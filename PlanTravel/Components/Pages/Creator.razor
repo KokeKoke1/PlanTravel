@@ -1,0 +1,190 @@
+﻿@page "/creator"
+@using PlanTravel.Components.Layout
+@layout SubLayout
+@inject IJSRuntime JSRuntime
+
+<div id="map"></div>
+
+<div id="bottom-bar" class="bottom-bar">
+    <div class="d-flex justify-content-center mb-4"><div style="width: 20%; border-top: 4px gray solid;"></div></div>
+    <div class="input-group mt-3" id="input-group">
+        <input type="text" class="form-control p-3"
+               placeholder="Dokąd jedziemy?"
+               @bind="SearchQuery"
+               oninput="handleInput(this.value)"
+               onfocus="showSearchMode()" onblur="hideSearchModeDelayed()">
+        <button class="btn btn-primary" id="search-button" @onclick="SearchLocation" style="display:none;">Szukaj</button>
+    </div>
+
+    <div id="choose-location-container">
+        <button class="btn btn-primary w-100 mt-3 p-3" onclick="chooseLocation()">Wybierz lokalizację</button>
+    </div>
+
+    <ul id="search-results" class="search-results" style="display:none;"></ul>
+</div>
+
+<script>
+    let map, marker, debounceTimeout, blurTimeout;
+
+    function initMap(dotnetHelper) {
+        mapboxgl.accessToken = 'pk.eyJ1Ijoia29rZWtva2UiLCJhIjoiY2ttM3NrZzRtMmtkbDJ3bzZ4MW0zamZ4MyJ9.TfmVYRp_5wRA3oFs_7z_RA';
+        map = new mapboxgl.Map({
+            container: 'map',
+            style: 'mapbox://styles/mapbox/streets-v11',
+            center: [21.0122, 52.2297],
+            zoom: 13
+        });
+
+        marker = new mapboxgl.Marker({ draggable: true })
+            .setLngLat([21.0122, 52.2297])
+            .addTo(map);
+
+        window._dotnetHelper = dotnetHelper;
+    }
+    function handleInput(value) {
+        if (debounceTimeout) clearTimeout(debounceTimeout);
+        debounceTimeout = setTimeout(() => {
+            fetchLocations(value);
+        }, 300);
+    }
+    function searchLocation(query) {
+        if (!query.trim()) return;
+        fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.length > 0) {
+                    let loc = data[0];
+                    updateMap(loc.lat, loc.lon);
+                }
+            });
+    }
+
+    function fetchLocations(query) {
+        if (query.length < 0) {
+            clearResults();
+            return;
+        }
+        fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`)
+            .then(response => response.json())
+            .then(data => updateResults(data));
+    }
+
+    function updateResults(data) {
+        const resultsContainer = document.getElementById('search-results');
+        resultsContainer.innerHTML = "";
+        data.forEach(loc => {
+            let li = document.createElement("li");
+            li.textContent = loc.display_name;
+            li.onclick = () => selectLocation(loc.lat, loc.lon, loc.display_name);
+            resultsContainer.appendChild(li);
+        });
+    }
+
+    function selectLocation(lat, lon, name) {
+        document.querySelector(".form-control").value = name;
+        updateMap(lat, lon);
+        clearResults();
+        hideSearchModeDelayed();
+    }
+
+    function updateMap(lat, lon) {
+        const lngLat = [parseFloat(lon), parseFloat(lat)];
+        map.flyTo({ center: lngLat, zoom: 14 });
+        marker.setLngLat(lngLat);
+    }
+
+    function clearResults() {
+        document.getElementById('search-results').innerHTML = "";
+    }
+
+    function showSearchMode() {
+        clearTimeout(blurTimeout);
+        document.getElementById('bottom-bar').classList.add('keyboard-active');
+        document.getElementById('choose-location-container').style.display = 'none';
+        document.getElementById('search-results').style.display = 'block';
+        document.getElementById('search-button').style.display = 'inline-block';
+    }
+
+    function hideSearchModeDelayed() {
+        blurTimeout = setTimeout(() => {
+            document.getElementById('bottom-bar').classList.remove('keyboard-active');
+            document.getElementById('choose-location-container').style.display = 'block';
+            document.getElementById('search-results').style.display = 'none';
+            document.getElementById('search-button').style.display = 'none';
+        }, 200);
+    }
+
+    async function chooseLocation() {
+        const coords = marker.getLngLat();
+
+        try {
+            const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${coords.lat}&lon=${coords.lng}`);
+            const data = await response.json();
+
+            const locationName = data.address.city || data.address.town || data.address.village || data.display_name;
+
+            if (!locationName) {
+                alert("Nie udało się pobrać nazwy lokalizacji.");
+                return;
+            }
+
+            history.replaceState({}, '', `/creator2?location=${encodeURIComponent(locationName)}`);
+            window.location.href = `/creator2?location=${encodeURIComponent(locationName)}`;
+        } catch (error) {
+            alert("❌ Błąd przy pobieraniu nazwy lokalizacji.");
+        }
+    }
+
+
+
+</script>
+
+
+@code {
+    private string SearchQuery = "";
+    private System.Timers.Timer debounceTimer;
+    private double SelectedLat;
+    private double SelectedLng;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var objRef = DotNetObjectReference.Create(this);
+            await JSRuntime.InvokeVoidAsync("initMap", objRef);
+        }
+    }
+
+    private async Task SearchLocation()
+    {
+        if (!string.IsNullOrWhiteSpace(SearchQuery))
+        {
+            await JSRuntime.InvokeVoidAsync("searchLocation", SearchQuery);
+        }
+    }
+
+    private async Task DebouncedFetchLocations()
+    {
+        debounceTimer?.Stop();
+        debounceTimer = new System.Timers.Timer(500) { AutoReset = false };
+        debounceTimer.Elapsed += async (_, _) => await FetchLocations();
+        debounceTimer.Start();
+    }
+
+    private async Task FetchLocations()
+    {
+        if (!string.IsNullOrWhiteSpace(SearchQuery))
+        {
+            await JSRuntime.InvokeVoidAsync("fetchLocations", SearchQuery);
+        }
+    }
+
+    [JSInvokable("OnLocationChosen")]
+    public void OnLocationChosen(double lat, double lng)
+    {
+        SelectedLat = lat;
+        SelectedLng = lng;
+        Console.WriteLine($"Wybrano lokalizację w C#: {lat}, {lng}");
+        // Możesz dodać dalsze logiki, np. przekierowanie
+    }
+}

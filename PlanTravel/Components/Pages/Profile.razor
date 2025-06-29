@@ -1,0 +1,47 @@
+﻿@page "/profile"
+@inject IJSRuntime JS
+
+<div class="container mt-4">
+    <h4 class="mb-3">Informacje o aplikacji</h4>
+
+    <div class="card bg-light border-0 mb-4">
+        <div class="card-body">
+            <p><strong>Nazwa:</strong> ExtraTravel</p>
+            <p><strong>Wersja:</strong> 1.0.0</p>
+            <p><strong>Opis:</strong> Aplikacja do planowania krótkich podróży, która generuje propozycje miejsc na podstawie lokalizacji i wybranego motywu.</p>
+
+            <button class="btn btn-outline-primary rounded-pill mt-2" @onclick="ShowAboutAlert">
+                Informacje
+            </button>
+        </div>
+    </div>
+
+    <h5 class="mb-2">Zarządzanie danymi</h5>
+    <div class="card bg-light border-0">
+        <div class="card-body">
+            <p class="text-danger">
+                Uwaga: ta operacja usunie wszystkie zapisane podróże z pamięci urządzenia.
+            </p>
+            <button class="btn btn-danger rounded-pill" @onclick="ConfirmDeleteAll">
+                Usuń wszystkie dane
+            </button>
+        </div>
+    </div>
+</div>
+
+@code {
+    private async Task ShowAboutAlert()
+    {
+        await JS.InvokeVoidAsync("alert", "📱 ExtraTravel\n\nWersja 1.0.0\nTwórca: Kamil Adamski \n\nAplikacja do szybkiego generowania planów podróży na podstawie lokalizacji i motywu.");
+    }
+
+    private async Task ConfirmDeleteAll()
+    {
+        var confirmed = await JS.InvokeAsync<bool>("confirm", "⚠️ Czy na pewno chcesz usunąć wszystkie zapisane podróże?");
+        if (confirmed)
+        {
+            await JS.InvokeVoidAsync("localStorage.removeItem", "trips");
+            await JS.InvokeVoidAsync("alert", "✅ Wszystkie dane zostały usunięte.");
+        }
+    }
+}

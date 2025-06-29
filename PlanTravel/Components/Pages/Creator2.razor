@@ -1,0 +1,150 @@
+﻿@page "/creator2"
+@using PlanTravel.Components.Layout
+@using Microsoft.AspNetCore.WebUtilities
+@inject HttpClient Http
+@inject NavigationManager Navigation
+@inject IJSRuntime JS
+@layout SubLayout
+<div class="container container-blur pc-grid">
+    <h3 class="mt-4 mb-3 w-100">Tworzenie planu podróży dla lokalizacji: @Location</h3>
+
+    <div class="mb-4 w-100 max-w">
+        <label class="form-label">Ilość miejsc (Wybierz ile miejsc chcesz odwiedzić)</label>
+        <input class="form-control p-3" type="number" @bind="Count" min="1" max="10" />
+    </div>
+
+    <div class="mb-4 w-100 max-w">
+        <label class="form-label">Okręg (Określ promień podróży od wybranego miasta w kilometrach)</label>
+        <input class="form-control p-3" type="number" @bind="RadiusKm" min="1" max="50" />
+    </div>
+
+    <div class="mb-4 w-100 pc-grid">
+        <div class="alert alert-info max-w" role="alert">
+            Wybierz temat przewodni podróży, który najbardziej Cię interesuje. Dzięki temu przygotujemy dla Ciebie spersonalizowaną trasę, dopasowaną do Twoich pasji i zainteresowań.
+        </div>
+        <div>
+            <label class="form-label">Temat podróży</label>
+            <select class="form-select p-3" @bind="Theme">
+                <option value="">-- Wybierz temat podróży --</option>
+                <option value="wszystko">Brak określonego tematu (wszystko)</option>
+                <option value="przyroda">🌿 Przyroda – lasy, jeziora, parki narodowe</option>
+                <option value="sztuka">🎨 Sztuka i kultura – muzea, galerie, zabytki</option>
+                <option value="historia">🏰 Historia – miejsca z duszą i bogatą przeszłością</option>
+                <option value="rozrywka">🎢 Rozrywka – parki rozrywki, atrakcje rodzinne</option>
+                <option value="relaks">🧘‍♀️ Relaks – spa, termy, spokojne plaże</option>
+                <option value="sport">🚴‍♂️ Aktywność – rowery, piesze wędrówki, sporty wodne</option>
+                <option value="gastronomia">🍽️ Gastronomia – lokalne smaki, restauracje, winnice</option>
+                <option value="natura i zwierzęta">🐾 Natura i zwierzęta – rezerwaty, ogrody zoologiczne</option>
+                <option value="impreza">Impreza – kluby, bary</option>
+            </select>
+        </div>
+    </div>
+
+
+    <button class="btn btn-primary w-100 mt-3 p-3 max-w" @onclick="GeneratePlan" disabled="@IsLoading">
+        @if (IsLoading)
+        {
+            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+            <span>Generowanie...</span>
+        }
+        else
+        {
+            <span>Generuj plan podróży</span>
+        }
+    </button>
+
+    @if (!string.IsNullOrEmpty(Message))
+    {
+        <div class="alert alert-info mt-3">@Message</div>
+    }
+</div>
+@code {
+    private string Location = "";
+    private int Count = 5;
+    private string Theme = "przyroda";
+    private string Message = "";
+    private int RadiusKm = 10;
+    private bool IsLoading = false;
+
+    private class Trip
+    {
+        public string Id { get; set; } = default!;
+        public string Name { get; set; } = default!;
+        public string Theme { get; set; } = default!;
+        public string LocationsJson { get; set; } = default!;
+    }
+
+    protected override void OnInitialized()
+    {
+        var uri = new Uri(Navigation.Uri);
+        var query = Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(uri.Query);
+
+        if (query.TryGetValue("location", out var locValue) && !string.IsNullOrWhiteSpace(locValue))
+        {
+            Location = locValue.ToString();
+        }
+        else
+        {
+            Message = "❌ Brak lokalizacji w adresie URL.";
+        }
+    }
+
+
+    private async Task GeneratePlan()
+    {
+        IsLoading = true;
+        Message = string.Empty;
+
+        try
+        {
+            var payload = new
+            {
+                location = Location,
+                radiusKm = RadiusKm,
+                count = Count,
+                theme = Theme
+            };
+
+            var response = await Http.PostAsJsonAsync("https://api.neteeo.com/extratravel/plan", payload);
+            response.EnsureSuccessStatusCode();
+
+            var content = await response.Content.ReadAsStringAsync();
+
+            var trip = new Trip
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    Name = Location,
+                    Theme = Theme,
+                    LocationsJson = content
+                };
+
+            var existingJson = await JS.InvokeAsync<string>("localStorage.getItem", "trips");
+            List<Trip> trips;
+            try
+            {
+                trips = string.IsNullOrWhiteSpace(existingJson)
+                    ? new List<Trip>()
+                    : System.Text.Json.JsonSerializer.Deserialize<List<Trip>>(existingJson) ?? new List<Trip>();
+            }
+            catch
+            {
+                trips = new List<Trip>(); // fallback w razie błędnego JSON
+            }
+
+
+            if (trips != null)
+            {
+                trips.Add(trip);
+                var newJson = System.Text.Json.JsonSerializer.Serialize(trips);
+                await JS.InvokeVoidAsync("localStorage.setItem", "trips", newJson);
+            }
+
+            Navigation.NavigateTo($"/travel/{trip.Id}", replace: true);
+        }
+        catch (Exception ex)
+        {
+            Message = $"❌ Błąd: {ex.Message}";
+            IsLoading = false;
+        }
+    }
+}

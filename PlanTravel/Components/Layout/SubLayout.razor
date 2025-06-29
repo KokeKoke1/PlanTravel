@@ -1,0 +1,68 @@
+﻿@inherits LayoutComponentBase
+@inject NavigationManager Navigation
+
+@code {
+    private string pageTitle = "Home";
+    private bool showSidebar = false;
+
+    protected override void OnInitialized()
+    {
+        UpdatePageState();
+        Navigation.LocationChanged += (sender, args) =>
+        {
+            UpdatePageState();
+            InvokeAsync(StateHasChanged);
+        };
+    }
+
+    private void UpdatePageState()
+    {
+        var uri = Navigation.ToBaseRelativePath(Navigation.Uri).ToLower();
+
+        if (uri.StartsWith("creator"))
+        {
+            showSidebar = false;
+            pageTitle = uri switch
+            {
+                "creator" => "Wybierz lokalizację",
+                "creator2" => "Dostosuj parametry",
+                _ => "Tworzenie podróży"
+            };
+        }
+        else if (uri.StartsWith("travel"))
+        {
+            showSidebar = true;
+            pageTitle = "Szczegóły podróży";
+        }
+        else
+        {
+            showSidebar = false;
+            pageTitle = "Home";
+        }
+    }
+
+    private void GoBack()
+    {
+        Navigation.NavigateTo("javascript:history.back()");
+    }
+}
+
+<div class="page d-flex">
+    @if (showSidebar)
+    {
+        <div class="sidebar">
+            <NavMenu />
+        </div>
+    }
+
+    <main class="flex-grow-1">
+        <div class="top-row px-4 p-1 h3 bg-light d-flex align-items-center">
+            <i @onclick="GoBack" class="bi bi-arrow-left-short btn-arrow" role="button"></i>
+            <span class="px-2">@pageTitle</span>
+        </div>
+
+        <article class="content">
+            @Body
+        </article>
+    </main>
+</div>

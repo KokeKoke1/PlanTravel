@@ -1,0 +1,96 @@
+﻿@page "/"
+
+<div class="container">
+    <div class="search-bar d-flex align-items-center rounded-pill mt-3" @onclick=OpenCreator>
+        <i class="bi bi-search fs-4 me-2 text-secondary"></i>
+        <span class="text-secondary">
+            Gdzie chcesz podróżować?
+        </span>
+    </div>
+
+    <div class="search-bar d-flex align-items-center rounded-pill mt-3 text-secondary"
+         @onclick="GetUserLocation">
+        <i class="bi bi-geo-alt fs-4 me-2"></i>
+        <span>
+            Aktualna lokalizacja
+        </span>
+    </div>
+
+    <div class="promo-banner mt-3 rounded">
+        <div class="row">
+            <div class="col-8 p-3 pb-4">
+                <h5 class="text-white fw-bold">Twoje ostatnie podróże</h5>
+                <div class="pt-2 pb-4">
+                    Powróć do niezapomnianych miejsc i wspominaj najpiękniejsze chwile! 🚀
+                </div>
+                <NavLink href="travel" class="promo-button p-2 rounded-pill">
+                    Sprawdź swoje podróże.
+                </NavLink>
+            </div>
+            <div class="col-4">
+                <div class="img"></div>
+            </div>
+        </div>
+    </div>
+    <div class="promo-banner mt-3 rounded" style="background: rgba(50, 168, 82, 0.7)">
+        <div class="row">
+            <div class="col-8 p-3 pb-4">
+                <h5 class="text-white fw-bold">Zanurz się w nieznane</h5>
+                <div class="pt-2 pb-4">
+                    Sprawdź nasze proponowane miejsca i odkryj nowe, wyjątkowe zakątki świata.
+                </div>
+                <NavLink href="loc" class="promo-button p-2 rounded-pill" style="background: rgba(50, 168, 82, 1)">
+                    Odkrywaj nieznane
+                </NavLink>
+            </div>
+            <div class="col-4">
+                <div class="img2"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@inject IJSRuntime JS
+@inject NavigationManager Navigation
+
+@code {
+    private void OpenCreator()
+    {
+        Navigation.NavigateTo("/creator");
+    }
+
+    private async Task GetUserLocation()
+    {
+        try
+        {
+            var locationName = await JS.InvokeAsync<string>("getUserCity");
+            if (!string.IsNullOrWhiteSpace(locationName))
+            {
+                var url = $"/creator2?location={Uri.EscapeDataString(locationName)}";
+                Navigation.NavigateTo(url, forceLoad: true);
+            }
+        }
+        catch (JSException jsEx)
+        {
+            var message = jsEx.Message;
+
+            if (message.Contains("PERMISSION_DENIED"))
+            {
+                await JS.InvokeVoidAsync("alert", "❌ Nie zezwolono na dostęp do lokalizacji. Zmień ustawienia przeglądarki.");
+            }
+            else if (message.Contains("POSITION_UNAVAILABLE"))
+            {
+                await JS.InvokeVoidAsync("alert", "📡 Lokalizacja jest niedostępna.");
+            }
+            else if (message.Contains("TIMEOUT"))
+            {
+                await JS.InvokeVoidAsync("alert", "⏳ Przekroczono czas oczekiwania na lokalizację.");
+            }
+            else
+            {
+                await JS.InvokeVoidAsync("alert", "⚠️ Wystąpił błąd podczas pobierania lokalizacji.");
+            }
+        }
+    }
+
+}

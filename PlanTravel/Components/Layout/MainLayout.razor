@@ -1,0 +1,43 @@
+﻿@inherits LayoutComponentBase
+@inject NavigationManager Navigation
+
+@code {
+    private string pageTitle = "Home";
+
+    protected override void OnInitialized()
+    {
+        UpdatePageTitle();
+        Navigation.LocationChanged += (sender, args) => UpdatePageTitle();
+    }
+
+    private void UpdatePageTitle()
+    {
+        var path = Navigation.Uri.Split('/').Last();
+        pageTitle = path switch
+        {
+            "travel" => "Twoje podróże",
+            "loc" => "Polecane lokalizacje",
+            "saved" => "Zapisane lokalizacje",
+            "profile" => "Twój profil",
+            _ => "ExtraTravel"
+        };
+        StateHasChanged();
+    }
+}
+
+<div class="page d-flex">
+    <div class="sidebar">
+        <NavMenu />
+    </div>
+
+    <main class="w-100">
+        <div class="top-row px-4 h3" style="border: none;">
+            <span>@pageTitle</span>
+        </div>
+
+        <article class="content px-2">
+            @Body
+        </article>
+    </main>
+</div>
+
