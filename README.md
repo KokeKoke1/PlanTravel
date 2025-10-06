@@ -111,9 +111,5 @@ Brak informacji o licencji w repozytorium. Zalecane dodanie pliku `LICENSE` (np.
 
 ---
 
-## 📬 Kontakt
-
-Autor: [KokeKoke1](https://github.com/KokeKoke1)
-
 > PlanTravel – zaplanuj lepiej, podróżuj więcej.
 
