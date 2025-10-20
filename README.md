@@ -1,115 +1,49 @@
-[readme (2).md](https://github.com/user-attachments/files/22728919/readme.2.md)
 # PlanTravel
 
-**PlanTravel** (znane również jako *ExtraTravel*) to nowoczesna aplikacja mobilna i desktopowa do **planowania podróży**, stworzona w technologii **.NET MAUI**. Umożliwia użytkownikom odkrywanie atrakcji turystycznych, tworzenie spersonalizowanych tras oraz organizowanie całej podróży w jednym miejscu.
+**PlanTravel** (also known as *ExtraTravel*) is a modern mobile and desktop app for **travel planning**, built with **.NET MAUI**. It lets users discover attractions, create personalized routes, and organize trips in one place.
 
-> ✨ Twoja podróż zaczyna się tutaj – z PlanTravel każda wyprawa staje się prostsza i bardziej inspirująca.
-
----
-
-## 🌍 Funkcje
-
-- 🧭 **Planowanie trasy** — dodawaj punkty podróży, twórz harmonogramy i zapisuj plan w aplikacji.
-- 🗺️ **Wyszukiwanie atrakcji** — znajdź miejsca warte odwiedzenia w wybranym promieniu.
-- 📍 **Szczegóły lokalizacji** — zobacz opisy, zdjęcia, udogodnienia, godziny otwarcia i inne dane.
-- ⭐ **Personalizacja** — dostosuj plan do własnych potrzeb, filtruj wyniki według kategorii.
-- ☁️ **Synchronizacja danych** — opcjonalne przechowywanie planów w chmurze.
+> ✨ Start your journey here — PlanTravel makes every trip simpler and more inspiring.
 
 ---
 
-## 🧩 Technologie
+## 🌍 Features
 
-- **.NET MAUI** – aplikacja wieloplatformowa (Android, iOS, Windows, macOS)
-- **C# 11** – język implementacji logiki aplikacji
-- **REST API / JSON** – komunikacja z zewnętrznymi serwisami turystycznymi
-- **SQLite** – lokalna baza danych do przechowywania planów podróży
-
----
-
-## ⚙️ Struktura projektu
-
-- `PlanTravel/` – główny projekt .NET MAUI (UI + logika)
-- `PlanTravel.Core/` – warstwa logiki biznesowej (modele, serwisy, interfejsy)
-- `PlanTravel.API/` *(jeśli istnieje)* – serwerowe API do obsługi synchronizacji danych użytkownika
+- 🧭 **Route Planning** — add travel points, create schedules, and save your plan.  
+- 🗺️ **Attraction Search** — find places worth visiting within a selected radius.  
+- 📍 **Location Details** — see descriptions, photos, amenities, opening hours, and more.  
+- ⭐ **Personalization** — tailor plans to your needs and filter results by category.  
+- ☁️ **Data Sync** — optional cloud storage for travel plans.
 
 ---
 
-## 🚀 Uruchomienie projektu
+## 🧩 Technologies
 
-### Wymagania
+- **.NET MAUI** — cross-platform app (Android, iOS, Windows, macOS)  
+- **C# 11** — app logic implementation  
+- **REST API / JSON** — communication with external travel services  
+- **SQLite** — local database for storing travel plans
 
-- .NET SDK 7.0+
-- Visual Studio 2022 z rozszerzeniem **.NET MAUI workload**
-- Emulator Android / iOS lub środowisko Windows/macOS
+---
 
-### Instalacja i uruchomienie
+## ⚙️ Project Structure
 
-1. Sklonuj repozytorium:
+- `PlanTravel/` — main .NET MAUI project (UI + logic)  
+- `PlanTravel.Core/` — business logic layer (models, services, interfaces)  
+- `PlanTravel.API/` *(optional)* — backend API for user data sync
+
+---
+
+## 🚀 Getting Started
+
+### Requirements
+
+- .NET SDK 7.0+  
+- Visual Studio 2022 with **.NET MAUI workload**  
+- Android/iOS emulator or Windows/macOS environment
+
+### Installation
+
+1. Clone the repo:
    ```bash
    git clone https://github.com/KokeKoke1/PlanTravel.git
    cd PlanTravel
-   ```
-2. Przywróć zależności:
-   ```bash
-   dotnet restore
-   ```
-3. Otwórz rozwiązanie `PlanTravel.sln` w Visual Studio.
-4. Wybierz platformę docelową (Android / Windows / iOS) i uruchom aplikację (F5 / Run).
-
----
-
-## 🔧 Konfiguracja
-
-- Ustaw klucze API w pliku `appsettings.json` lub w sekcji `Secrets` (jeśli aplikacja korzysta z zewnętrznych API do lokalizacji / map / atrakcji).
-- Dla testów lokalnych można uruchomić aplikację bez kluczy, część funkcji (np. mapy) może być wtedy ograniczona.
-
----
-
-## 🧪 Testowanie
-
-Jeśli repo zawiera testy jednostkowe lub integracyjne:
-```bash
-dotnet test
-```
-
----
-
-## 🗺️ Przykładowe zastosowanie
-
-1. Wybierz miasto lub obszar.
-2. Określ promień wyszukiwania atrakcji.
-3. Dodaj interesujące miejsca do planu.
-4. Wygeneruj harmonogram podróży.
-
-Aplikacja automatycznie zapisze plan i umożliwi jego edycję w dowolnym momencie.
-
----
-
-## 🧠 Inspiracja i cel projektu
-
-PlanTravel powstał z myślą o nowoczesnych podróżnikach, którzy chcą:
-- szybko planować wyjazdy,
-- mieć wszystkie informacje o atrakcjach w jednym miejscu,
-- oszczędzić czas i uniknąć chaosu w organizacji podróży.
-
-Projekt jest inspirowany artykułem z portalu [neteeo.com – ExtraTravel: Twoja podróż zaczyna się tutaj](https://neteeo.com/extratravel-twoja-podroz-zaczyna-sie-tutaj/).
-
----
-
-## 🤝 Wkład w projekt
-
-1. Forkuj repozytorium.
-2. Utwórz nowy branch z opisową nazwą (`feature/nowa-funkcja`).
-3. Wprowadź zmiany i przetestuj.
-4. Otwórz Pull Request.
-
----
-
-## 📄 Licencja
-
-Brak informacji o licencji w repozytorium. Zalecane dodanie pliku `LICENSE` (np. **MIT License**).
-
----
-
-> PlanTravel – zaplanuj lepiej, podróżuj więcej.
-
