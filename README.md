@@ -1,6 +1,8 @@
 # PlanTravel
 
-**PlanTravel** (also known as *ExtraTravel*) is a modern mobile and desktop app for **travel planning**, built with **.NET MAUI**. It lets users discover attractions, create personalized routes, and organize trips in one place.
+PlanTravel (also known as ExtraTravel) is a cross-platform travel planning application based on .NET MAUI, available for both mobile and desktop devices.
+
+The application features a built-in AI model that helps users discover attractions, plan routes, and organize trips in a single, intuitive interface. Currently, **I'm providing only the front-end of the application.**
 
 > ✨ Start your journey here — PlanTravel makes every trip simpler and more inspiring.
 
